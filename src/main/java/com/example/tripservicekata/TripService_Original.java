@@ -11,9 +11,15 @@ import java.util.List;
 
 public class TripService_Original {
 
+	private UserSession userSession;
+
+	public TripService_Original(UserSession userSession) {
+		this.userSession = userSession;
+	}
+
 	public List<Trip> getTripsByUser(User user) throws UserNotLoggedInException {
 		List<Trip> tripList = new ArrayList<Trip>();
-		User loggedUser = UserSession.getInstance().getLoggedUser();
+		User loggedUser = this.userSession.getLoggedUser();
 		boolean isFriend = false;
 		if (loggedUser != null) {
 			for (User friend : user.getFriends()) {
@@ -30,5 +36,5 @@ public class TripService_Original {
 			throw new UserNotLoggedInException();
 		}
 	}
-	
+
 }
