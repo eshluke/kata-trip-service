@@ -3,6 +3,7 @@ package com.example.tripservicekata.trip;
 import com.example.tripservicekata.exception.UserNotLoggedInException;
 import com.example.tripservicekata.user.User;
 import com.example.tripservicekata.user.UserSession;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -22,13 +23,20 @@ public class TripServiceTest {
     private static final Trip TO_SEOUL = new Trip();
     private static final Trip TO_TOKYO = new Trip();
 
+    private TripDAO tripDAO;
+
+    @BeforeEach
+    void setUp() {
+        tripDAO = new FakeTripDAO();
+    }
+
     @Test
     void when_not_logged_in_should_throw_exception() {
         // given
         UserSession session = mockUserSession(GUEST);
 
         // when, then
-        TripService tripService = new TripService(session);
+        TripService tripService = new TripService(session, tripDAO);
         assertThrows(UserNotLoggedInException.class, () -> tripService.getTripsByUser(new User()));
     }
 
@@ -45,12 +53,12 @@ public class TripServiceTest {
         user.addTrip(TO_TOKYO);
 
         // when, then
-        TripService tripService = new TripService(session);
+        TripService tripService = new TripService(session, tripDAO);
         assertEquals(0, tripService.getTripsByUser(user).size());
     }
 
     @Test
-    void if_the_loggedUser_is_a_friend_of_the_user_return_userTrips() {
+    void when_the_loggedUser_is_a_friend_of_the_user_should_return_userTrips() {
         // given
         User loggedUser = REGISTERED;
         UserSession session = mockUserSession(loggedUser);
@@ -63,7 +71,7 @@ public class TripServiceTest {
         user.addTrip(TO_TOKYO);
 
         // when, then
-        TripService tripService = new TripServiceForTest(session);
+        TripService tripService = new TripService(session, tripDAO);
         assertEquals(2, tripService.getTripsByUser(user).size());
     }
 
@@ -73,14 +81,9 @@ public class TripServiceTest {
         return session;
     }
 
-    private static class TripServiceForTest extends TripService {
-
-        private TripServiceForTest(UserSession userSession) {
-            super(userSession);
-        }
-
+    private static class FakeTripDAO extends TripDAO {
         @Override
-        protected List<Trip> retrieveTripsBy(User user) {
+        public List<Trip> findTripsBy(User user) {
             return user.trips();
         }
     }
