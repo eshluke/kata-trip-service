@@ -28,7 +28,7 @@ public class TripService {
 		}
 	}
 
-	protected List<Trip> retrieveTripsBy(User user) {
+	private List<Trip> retrieveTripsBy(User user) {
 		return this.tripDAO.findTripsBy(user);
 	}
 }
