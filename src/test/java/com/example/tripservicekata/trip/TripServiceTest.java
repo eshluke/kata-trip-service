@@ -4,10 +4,9 @@ import com.example.tripservicekata.exception.UserNotLoggedInException;
 import com.example.tripservicekata.user.User;
 import com.example.tripservicekata.user.UserSession;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,13 +61,9 @@ public class TripServiceTest {
         List<Trip> userTrips = Arrays.asList(new Trip(), new Trip());
         UserSession session = mockUserSession(loggedUser);
 
-        try (MockedStatic<TripDAO> tripDao = Mockito.mockStatic(TripDAO.class)) {
-            tripDao.when(() -> TripDAO.findTripsByUser(user)).thenReturn(userTrips);
-
-            // when, then
-            TripService tripService = new TripService(session);
-            assertEquals(userTrips.size(), tripService.getTripsByUser(user).size());
-        }
+        // when, then
+        TripService tripService = new TripServiceForTest(session, userTrips);
+        assertEquals(userTrips.size(), tripService.getTripsByUser(user).size());
     }
 
     @Test
@@ -81,18 +76,34 @@ public class TripServiceTest {
         List<Trip> userTrips = Arrays.asList(new Trip(), new Trip());
         UserSession session = mockUserSession(loggedUser);
 
-        try (MockedStatic<TripDAO> tripDao = Mockito.mockStatic(TripDAO.class)) {
-            tripDao.when(() -> TripDAO.findTripsByUser(user)).thenReturn(userTrips);
-
-            // when, then
-            TripService tripService = new TripService(session);
-            assertEquals(0, tripService.getTripsByUser(user).size());
-        }
+        // when, then
+        TripService tripService = new TripServiceForTest(session, userTrips);
+        assertEquals(0, tripService.getTripsByUser(user).size());
     }
 
     private UserSession mockUserSession(User of) {
         UserSession session = mock(UserSession.class);
         when(session.getLoggedUser()).thenReturn(of);
         return session;
+    }
+
+
+    private class TripServiceForTest extends TripService {
+
+        private List<Trip> userTrips;
+
+        private TripServiceForTest(UserSession userSession) {
+            this(userSession, Collections.emptyList());
+        }
+
+        private TripServiceForTest(UserSession userSession, List<Trip> userTrips) {
+            super(userSession);
+            this.userTrips = userTrips;
+        }
+
+        @Override
+        List<Trip> retrieveTripsBy(User user) {
+            return this.userTrips;
+        }
     }
 }
