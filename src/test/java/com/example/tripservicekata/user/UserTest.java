@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class UserTest {
 
     @Test
-    void when_the_user_doesnt_have_friend_cathy() {
+    void when_the_user_does_not_have_friend_cathy() {
         User user = new User();
         User ben = new User();
         User cathy = new User();
