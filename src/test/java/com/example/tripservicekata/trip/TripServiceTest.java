@@ -2,18 +2,13 @@ package com.example.tripservicekata.trip;
 
 import com.example.tripservicekata.exception.UserNotLoggedInException;
 import com.example.tripservicekata.user.User;
-import com.example.tripservicekata.user.UserSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class TripServiceTest {
     private static final User GUEST = null;
@@ -33,18 +28,17 @@ public class TripServiceTest {
     @Test
     void when_not_logged_in_should_throw_exception() {
         // given
-        UserSession session = mockUserSession(GUEST);
+        User user = new User();
 
         // when, then
-        TripService tripService = new TripService(session, tripDAO);
-        assertThrows(UserNotLoggedInException.class, () -> tripService.getTripsByUser(new User()));
+        TripService tripService = new TripService(tripDAO);
+        assertThrows(UserNotLoggedInException.class, () -> tripService.getTripsByUser(user, GUEST));
     }
 
     @Test
     void when_the_users_are_not_friends_should_not_return_userTrips() {
         // given
         User loggedUser = REGISTERED;
-        UserSession session = mockUserSession(loggedUser);
 
         User user = new User();
         user.addFriend(A_FRIEND);
@@ -53,15 +47,14 @@ public class TripServiceTest {
         user.addTrip(TO_TOKYO);
 
         // when, then
-        TripService tripService = new TripService(session, tripDAO);
-        assertEquals(0, tripService.getTripsByUser(user).size());
+        TripService tripService = new TripService(tripDAO);
+        assertEquals(0, tripService.getTripsByUser(user, loggedUser).size());
     }
 
     @Test
     void when_the_loggedUser_is_a_friend_of_the_user_should_return_userTrips() {
         // given
         User loggedUser = REGISTERED;
-        UserSession session = mockUserSession(loggedUser);
 
         User user = new User();
         user.addFriend(A_FRIEND);
@@ -71,14 +64,8 @@ public class TripServiceTest {
         user.addTrip(TO_TOKYO);
 
         // when, then
-        TripService tripService = new TripService(session, tripDAO);
-        assertEquals(2, tripService.getTripsByUser(user).size());
-    }
-
-    private UserSession mockUserSession(User of) {
-        UserSession session = mock(UserSession.class);
-        when(session.getLoggedUser()).thenReturn(of);
-        return session;
+        TripService tripService = new TripService(tripDAO);
+        assertEquals(2, tripService.getTripsByUser(user, loggedUser).size());
     }
 
     private static class FakeTripDAO extends TripDAO {
