@@ -102,7 +102,7 @@ public class TripServiceTest {
         }
 
         @Override
-        List<Trip> retrieveTripsBy(User user) {
+        protected List<Trip> retrieveTripsBy(User user) {
             return this.userTrips;
         }
     }
